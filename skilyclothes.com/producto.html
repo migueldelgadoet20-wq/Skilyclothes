@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Producto — Skily Clothes</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    /* ── Modal de pago ──────────────────────────────────────── */
+.pago-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(6px);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+  /* permite scroll del backdrop si el modal es muy alto en mobile */
+  overflow-y: auto;
+}
+.pago-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pago-modal {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  transform: translateY(20px) scale(.97);
+  transition: transform .3s ease;
+  overflow: hidden;
+  /* en mobile: el modal no puede sobrepasar la pantalla */
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+.pago-modal-backdrop.open .pago-modal {
+  transform: none;
+}
+
+/* Header del modal */
+.pago-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+.pago-modal__title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: .04em;
+  color: #fff;
+}
+.pago-modal__close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+}
+.pago-modal__close:hover { background: rgba(255,255,255,.18); }
+
+/* Resumen del producto */
+.pago-modal__resumen {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+.pago-modal__resumen img {
+  width: 60px; height: 60px;
+  object-fit: contain;
+  background: #242424;
+  border-radius: 10px;
+}
+.pago-modal__resumen-info { flex: 1; }
+.pago-modal__resumen-name { font-weight: 700; font-size: .95rem; }
+.pago-modal__resumen-meta { font-size: .82rem; color: #888; margin-top: 2px; }
+.pago-modal__resumen-price { font-weight: 900; font-size: 1.2rem; color: #fff; }
+
+/* Cuerpo del modal — scrolleable */
+.pago-modal__body {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+}
+
+/* Sección de envío */
+.envio-section h4 {
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 12px;
+}
+.envio-opciones { display: flex; flex-direction: column; gap: 10px; }
+.envio-opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  background: transparent;
+  text-align: left;
+  color: #f0f0f0;
+  width: 100%;
+}
+.envio-opcion:hover { border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.04); }
+.envio-opcion.selected { border-color: #fff; background: rgba(255,255,255,.07); }
+.envio-opcion__radio {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .2s;
+}
+.envio-opcion.selected .envio-opcion__radio { border-color: #fff; }
+.envio-opcion__radio::after {
+  content: '';
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.envio-opcion.selected .envio-opcion__radio::after { opacity: 1; }
+.envio-opcion__texto { flex: 1; }
+.envio-opcion__nombre { font-weight: 700; font-size: .95rem; }
+.envio-opcion__desc { font-size: .82rem; color: #888; margin-top: 3px; line-height: 1.4; }
+.envio-opcion__badge {
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  align-self: center;
+}
+.envio-opcion__badge--gratis { background: rgba(34,197,94,.15); color: #4ade80; }
+.envio-opcion__badge--correo { background: rgba(255,255,255,.1); color: #aaa; }
+
+/* Aviso CABA */
+.aviso-caba {
+  background: rgba(255,200,50,.07);
+  border: 1px solid rgba(255,200,50,.2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: .82rem;
+  color: #f5c842;
+  line-height: 1.5;
+  display: none;
+}
+.aviso-caba.visible { display: block; }
+
+/* Separador */
+.pago-modal__sep {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+/* Total */
+.pago-modal__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+}
+.pago-modal__total span:first-child { color: #888; font-size: .9rem; }
+.pago-modal__total-precio { font-size: 1.4rem; font-weight: 900; color: #fff; }
+
+/* Métodos de pago */
+.metodos-section h4 {
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 12px;
+}
+.metodos-grid { display: flex; gap: 10px; }
+.metodo-btn {
+  flex: 1;
+  padding: 14px 10px;
+  border: 2px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  background: transparent;
+  color: #f0f0f0;
+  font-weight: 700;
+  font-size: .88rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: border-color .2s, background .2s;
+}
+.metodo-btn:hover { border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.04); }
+.metodo-btn.selected { border-color: #fff; background: rgba(255,255,255,.07); }
+.metodo-btn__icon { font-size: 1.5rem; }
+
+/* Botón comprar — siempre fijo al fondo del modal */
+.pago-modal__footer {
+  padding: 16px 24px 24px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  flex-shrink: 0;
+}
+.btn-comprar {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  border: none;
+  cursor: pointer;
+  transition: all .25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-comprar--mp {
+  background: #009ee3;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0,158,227,.35);
+}
+.btn-comprar--mp:hover {
+  background: #0082bb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,158,227,.45);
+}
+.btn-comprar--wa {
+  background: #25D366;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(37,211,102,.3);
+}
+.btn-comprar--wa:hover {
+  background: #1fb959;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(37,211,102,.4);
+}
+.btn-comprar:disabled {
+  background: #333 !important;
+  color: #666 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Nota debajo del botón */
+.pago-modal__nota {
+  text-align: center;
+  font-size: .75rem;
+  color: #555;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Responsive mobile — sheet desde abajo */
+@media (max-width: 480px) {
+  .pago-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+    overflow-y: hidden; /* el scroll va dentro del modal, no del backdrop */
+  }
+  .pago-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 92dvh; /* deja un poco de respiro arriba */
+    margin-top: auto;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar navbar--scrolled" id="navbar">
+    <div class="navbar__container">
+      <div class="navbar__left">
+        <a href="index.html" class="navbar__logo" aria-label="Skily Clothes inicio">
+          <img src="imagenes/LOGO.png" alt="Skily Clothes" class="logo-img" width="42" height="42">
+          <span class="logo-text">Skily <span class="accent">Clothes</span></span>
+        </a>
+      </div>
+      <div class="navbar__center">
+        <ul class="navbar__menu" id="navMenu">
+          <li><a href="#" class="nav-link">FAMILIA</a></li>
+          <li><a href="#" class="nav-link">EXCLUSIVIDAD</a></li>
+          <li><a href="#" class="nav-link">CONTACTO</a></li>
+          <li><a href="#" class="nav-link">INFO</a></li>
+          <li><a href="catalogo.html" class="nav-link">TODOS LOS PRODUCTOS</a></li>
+        </ul>
+      </div>
+      <div class="navbar__actions">
+        <button class="icon-btn" id="userIcon" aria-label="Mi cuenta">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <button class="icon-btn cart-icon" id="cartIcon" aria-label="Carrito">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/>
+            <path d="M2 2h4l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L22 6H6"/>
+          </svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Abrir menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ CONTENIDO ═══ -->
+  <div class="page-content producto-page">
+    <div class="producto-container" id="productoContainer"></div>
+  </div>
+
+  <!-- ═══ MODAL DE PAGO ═══ -->
+  <div class="pago-modal-backdrop" id="pagoModalBackdrop">
+    <div class="pago-modal" role="dialog" aria-modal="true" aria-labelledby="pagoModalTitle">
+
+      <div class="pago-modal__header">
+        <span class="pago-modal__title" id="pagoModalTitle">FINALIZAR COMPRA</span>
+        <button class="pago-modal__close" id="pagoModalClose" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <!-- Resumen del producto -->
+      <div class="pago-modal__resumen">
+        <img id="pagoImg" src="" alt="">
+        <div class="pago-modal__resumen-info">
+          <div class="pago-modal__resumen-name" id="pagoNombre"></div>
+          <div class="pago-modal__resumen-meta" id="pagoMeta"></div>
+        </div>
+        <div class="pago-modal__resumen-price" id="pagoPrecio"></div>
+      </div>
+
+      <div class="pago-modal__body">
+
+        <!-- Envío -->
+        <div class="envio-section">
+          <h4>Método de envío</h4>
+          <div class="envio-opciones">
+            <button class="envio-opcion" data-envio="caba" id="opcionCaba">
+              <div class="envio-opcion__radio"></div>
+              <div class="envio-opcion__texto">
+                <div class="envio-opcion__nombre">Envío a domicilio</div>
+                <div class="envio-opcion__desc">Solo CABA — Ciudad Autónoma de Buenos Aires</div>
+              </div>
+              <span class="envio-opcion__badge envio-opcion__badge--gratis">GRATIS</span>
+            </button>
+            <button class="envio-opcion" data-envio="correo" id="opcionCorreo">
+              <div class="envio-opcion__radio"></div>
+              <div class="envio-opcion__texto">
+                <div class="envio-opcion__nombre">Correo Argentino</div>
+                <div class="envio-opcion__desc">Para el resto del país — te avisamos el costo por WhatsApp antes de confirmar</div>
+              </div>
+              <span class="envio-opcion__badge envio-opcion__badge--correo">A COORDINAR</span>
+            </button>
+          </div>
+          <div class="aviso-caba" id="avisoCaba">
+            Si tu domicilio <strong>no está en CABA</strong>, por favor elegí la opción Correo Argentino.
+          </div>
+        </div>
+
+        <hr class="pago-modal__sep">
+
+        <!-- Total -->
+        <div class="pago-modal__total">
+          <span>Total a pagar</span>
+          <span class="pago-modal__total-precio" id="pagoTotal"></span>
+        </div>
+
+        <hr class="pago-modal__sep">
+
+        <!-- Método de pago -->
+        <div class="metodos-section">
+          <h4>Método de pago</h4>
+          <div class="metodos-grid">
+            <button class="metodo-btn" data-metodo="mp" id="metodMP">
+              <span>Mercado Pago</span>
+            </button>
+            <button class="metodo-btn" data-metodo="wa" id="metodoWA">
+              <span>WhatsApp</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer: botón comprar -->
+      <div class="pago-modal__footer">
+        <button class="btn-comprar btn-comprar--mp" id="btnComprar" disabled>
+          Seleccioná envío y pago
+        </button>
+        <p class="pago-modal__nota" id="pagoNota">
+          Elegí cómo querés recibir tu pedido y cómo pagar.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ CARRITO PANEL ═══ -->
+  <div class="cart-panel" id="cartPanel">
+    <div class="cart-panel__header">
+      <h3>Tu Carrito</h3>
+      <button class="cart-panel__close" id="closeCartPanel">&times;</button>
+    </div>
+    <div class="cart-panel__items" id="cartItemsList">
+      <p class="cart-empty">El carrito está vacío</p>
+    </div>
+    <div class="cart-panel__footer">
+      <div class="cart-total">Total: <span id="cartTotal">$0</span></div>
+      <button class="btn btn--primary cart-checkout" id="cartCheckoutBtn">Comprar por WhatsApp</button>
+    </div>
+  </div>
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <script src="products.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    // ── Navbar ────────────────────────────────────────────────
+    (function() {
+      const navbar    = document.getElementById("navbar");
+      const hamburger = document.getElementById("hamburger");
+      const navMenu   = document.getElementById("navMenu");
+      let lastScroll  = 0;
+      window.addEventListener("scroll", () => {
+        const y = window.scrollY;
+        navbar.classList.toggle("navbar--scrolled", y > 50);
+        navbar.classList.toggle("navbar--hidden",   y > lastScroll && y > 200);
+        lastScroll = y;
+      }, { passive: true });
+      hamburger?.addEventListener("click", () => {
+        hamburger.classList.toggle("hamburger--open");
+        navMenu.classList.toggle("navbar__menu--open");
+      });
+      navMenu?.querySelectorAll(".nav-link").forEach(l => l.addEventListener("click", () => {
+        hamburger.classList.remove("hamburger--open");
+        navMenu.classList.remove("navbar__menu--open");
+      }));
+    })();
+
+    // ── Página producto ───────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      initCart();
+      document.getElementById("userIcon")?.addEventListener("click", () =>
+        showToast("Próximamente podrás gestionar tu cuenta.", "info"));
+
+      const params    = new URLSearchParams(window.location.search);
+      const productId = parseInt(params.get("id"));
+      const product   = PRODUCTS.find(p => p.id === productId);
+      const container = document.getElementById("productoContainer");
+
+      if (!product) {
+        container.innerHTML = `<p style="color:var(--text);text-align:center;padding:60px;">Producto no encontrado.</p>`;
+        return;
+      }
+
+      let selectedSize = null;
+
+      // ── Carrusel ─────────────────────────────────────────────
+      const allImages  = product.images?.length ? product.images : [product.image];
+      const slidesHtml = allImages.map(img =>
+        `<div class="producto-carousel-slide">
+           <img src="${img}" alt="${product.name}" onerror="this.src='imagenes/placeholder.png'">
+         </div>`).join("");
+      const dotsHtml = allImages.map((_, i) =>
+        `<span class="carousel-dot${i===0?' active':''}" data-index="${i}"></span>`).join("");
+
+      const tallesHtml = product.sizes.map(s =>
+        `<button class="talle-btn" data-size="${s.size}" ${!s.available?'disabled':''}>${s.size}</button>`).join("");
+
+      container.innerHTML = `
+        <div class="producto-imagenes">
+          <div class="producto-carousel">
+            <div class="producto-carousel-slides" id="carouselSlides">${slidesHtml}</div>
+            <button class="carousel-btn carousel-prev" id="carouselPrev" aria-label="Anterior">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="carousel-btn carousel-next" id="carouselNext" aria-label="Siguiente">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div class="carousel-dots" id="carouselDots">${dotsHtml}</div>
+          </div>
+        </div>
+
+        <div class="producto-info">
+          <h1 class="producto-nombre">${product.name}</h1>
+          <p class="producto-precio">${formatPrice(product.price)}</p>
+
+          <div class="producto-talles">
+            <span>Elegí tu talle</span>
+            <div class="talles-grid" id="tallesGrid">${tallesHtml}</div>
+          </div>
+
+          <button class="producto-agregar" id="btnComprarAhora" ${product.stock<=0?'disabled':''}>
+            ${product.stock>0 ? 'COMPRAR AHORA' : 'AGOTADO'}
+          </button>
+
+          <div class="medios-pago">
+            <h3>Medios de pago</h3>
+            <div class="pago-items">
+              <div class="pago-item">Mercado Pago</div>
+              <div class="pago-item">WhatsApp</div>
+            </div>
+          </div>
+        </div>`;
+
+      // ── Carrusel lógica ───────────────────────────────────────
+      const slidesWrap = document.getElementById("carouselSlides");
+      const dots       = document.querySelectorAll(".carousel-dot");
+      let curr = 0;
+      function goTo(i) {
+        curr = (i + allImages.length) % allImages.length;
+        slidesWrap.style.transform = `translateX(-${curr*100}%)`;
+        dots.forEach((d,j) => d.classList.toggle("active", j===curr));
+      }
+      document.getElementById("carouselPrev").addEventListener("click", () => goTo(curr-1));
+      document.getElementById("carouselNext").addEventListener("click", () => goTo(curr+1));
+      dots.forEach(dot => dot.addEventListener("click", () => goTo(parseInt(dot.dataset.index))));
+
+      // ── Talles ───────────────────────────────────────────────
+      const talleBtns = document.querySelectorAll(".talle-btn:not([disabled])");
+      talleBtns.forEach(btn => btn.addEventListener("click", () => {
+        talleBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedSize = btn.dataset.size;
+      }));
+
+      // ── Botón COMPRAR AHORA → abre modal ─────────────────────
+      document.getElementById("btnComprarAhora")?.addEventListener("click", () => {
+        if (!selectedSize) {
+          showToast("Seleccioná un talle primero.", "error");
+          return;
+        }
+        // Agregar al carrito el producto con talle seleccionado
+  addToCart(product.id, selectedSize);
+  // Redirigir al checkout
+  window.location.href = "checkout.html";
+        openPagoModal(product, selectedSize);
+      });
+
+      // ════════════════════════════════════════════════════════
+      //  MODAL DE PAGO
+      // ════════════════════════════════════════════════════════
+      const backdrop   = document.getElementById("pagoModalBackdrop");
+      const closeBtn   = document.getElementById("pagoModalClose");
+      let envioSel     = null;   // "caba" | "correo"
+      let metodoSel    = null;   // "mp"   | "wa"
+
+      function openPagoModal(prod, size) {
+        // Rellenar datos del resumen
+        document.getElementById("pagoImg").src         = prod.image;
+        document.getElementById("pagoNombre").textContent = prod.name;
+        document.getElementById("pagoMeta").textContent   = `Talle: ${size}`;
+        document.getElementById("pagoPrecio").textContent = formatPrice(prod.price);
+        document.getElementById("pagoTotal").textContent  = formatPrice(prod.price);
+
+        // Resetear selecciones
+        envioSel  = null;
+        metodoSel = null;
+        document.querySelectorAll(".envio-opcion").forEach(o => o.classList.remove("selected"));
+        document.querySelectorAll(".metodo-btn").forEach(m => m.classList.remove("selected"));
+        document.getElementById("avisoCaba").classList.remove("visible");
+        updateBtnComprar();
+
+        backdrop.classList.add("open");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closePagoModal() {
+        backdrop.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+
+      closeBtn.addEventListener("click", closePagoModal);
+      backdrop.addEventListener("click", e => { if (e.target === backdrop) closePagoModal(); });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") closePagoModal(); });
+
+      // ── Opciones de envío ─────────────────────────────────────
+      document.querySelectorAll(".envio-opcion").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".envio-opcion").forEach(o => o.classList.remove("selected"));
+          btn.classList.add("selected");
+          envioSel = btn.dataset.envio;
+          // Mostrar aviso CABA si elige domicilio
+          document.getElementById("avisoCaba").classList.toggle("visible", envioSel === "caba");
+          updateBtnComprar();
+        });
+      });
+
+      // ── Métodos de pago ───────────────────────────────────────
+      document.querySelectorAll(".metodo-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".metodo-btn").forEach(m => m.classList.remove("selected"));
+          btn.classList.add("selected");
+          metodoSel = btn.dataset.metodo;
+          updateBtnComprar();
+        });
+      });
+
+      // ── Actualizar botón COMPRAR ──────────────────────────────
+      function updateBtnComprar() {
+        const btn  = document.getElementById("btnComprar");
+        const nota = document.getElementById("pagoNota");
+        const listo = envioSel && metodoSel;
+
+        btn.disabled = !listo;
+
+        if (!listo) {
+          btn.textContent = "Seleccioná envío y pago";
+          btn.className   = "btn-comprar btn-comprar--mp";
+          nota.textContent = "Elegí cómo querés recibir tu pedido y cómo pagar.";
+          return;
+        }
+
+        if (metodoSel === "mp") {
+          btn.className   = "btn-comprar btn-comprar--mp";
+          btn.innerHTML   = " &nbsp;Pagar con Mercado Pago";
+          nota.textContent = envioSel === "caba"
+            ? "Envío a domicilio en CABA incluido. Serás redirigido a Mercado Pago."
+            : "Coordinamos el envío por WhatsApp después del pago.";
+        } else {
+          btn.className   = "btn-comprar btn-comprar--wa";
+          btn.innerHTML   = " &nbsp;Continuar por WhatsApp";
+          nota.textContent = envioSel === "caba"
+            ? "Te escribimos para coordinar el envío a domicilio en CABA."
+            : "Te escribimos para coordinar el envío por Correo Argentino.";
+        }
+      }
+
+      // ── Acción final del botón COMPRAR ────────────────────────
+      document.getElementById("btnComprar").addEventListener("click", () => {
+        if (!envioSel || !metodoSel) return;
+
+        const prod = PRODUCTS.find(p => p.id === productId);
+        const size = document.getElementById("pagoMeta").textContent.replace("Talle: ", "");
+
+        if (metodoSel === "mp") {
+          // Abrir link de Mercado Pago del producto
+          if (prod.mpLink) {
+            window.open(prod.mpLink, "_blank");
+          } else {
+            showToast("Link de Mercado Pago no disponible.", "error");
+          }
+          closePagoModal();
+
+        } else {
+          // WhatsApp con detalle del pedido y envío
+          const envioTexto = envioSel === "caba"
+            ? "Envío a domicilio en CABA"
+            : "Envío por Correo Argentino (a coordinar)";
+          const msg = `Hola! Quiero comprar:\n\n• ${prod.name} — Talle ${size}\nPrecio: ${formatPrice(prod.price)}\nEnvío: ${envioTexto}\n\n¿Podés confirmar disponibilidad?`;
+          window.open(`https://wa.me/5491127747430?text=${encodeURIComponent(msg)}`, "_blank");
+          closePagoModal();
+        }
+      });
+
+    }); // DOMContentLoaded
+  </script>
+</body>
+</html>

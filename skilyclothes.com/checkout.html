@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Skily Clothes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .checkout-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 120px 24px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 48px;
+    }
+    .checkout-summary, .checkout-form {
+      background: var(--bg-card);
+      border-radius: 24px;
+      padding: 28px;
+      border: 1px solid var(--border);
+    }
+    .checkout-summary h2, .checkout-form h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    .checkout-items {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 24px;
+    }
+    .checkout-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .checkout-item img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+    .checkout-item-info { flex: 1; }
+    .checkout-total {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid var(--border-md);
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg-3);
+      border: 1px solid var(--border-md);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus { outline: none; border-color: var(--accent); }
+    .form-group select option { background: #1a1a1a; }
+
+    /* Alerta CABA */
+    .caba-error {
+      display: none;
+      background: rgba(255, 70, 70, 0.1);
+      border: 1px solid rgba(255, 70, 70, 0.35);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-top: 10px;
+      color: #ff8080;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .caba-error.visible { display: block; }
+
+    /* Badge CABA */
+    .caba-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,197,94,.1);
+      border: 1px solid rgba(34,197,94,.3);
+      color: #4ade80;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+    }
+    .caba-badge.hidden { display: none; }
+
+    .btn-pagar {
+      width: 100%;
+      padding: 16px;
+      background: var(--accent);
+      color: var(--bg-3);
+      font-weight: 800;
+      font-size: 1.1rem;
+      border-radius: 14px;
+      margin-top: 16px;
+      transition: all 0.2s;
+      font-family: inherit;
+      letter-spacing: 0.03em;
+    }
+    .btn-pagar:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,255,255,0.2);
+    }
+    .btn-pagar:disabled {
+      background: #333;
+      color: #555;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .nota-envio {
+      font-size: 0.78rem;
+      color: #888;
+      margin-top: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .checkout-wrapper { grid-template-columns: 1fr; padding-top: 100px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__container">
+      <div class="navbar__left">
+        <a href="index.html" class="navbar__logo">
+          <img src="imagenes/LOGO.png" alt="Skily Clothes" class="logo-img" width="42" height="42">
+          <span class="logo-text">Skily <span class="accent">Clothes</span></span>
+        </a>
+      </div>
+      <div class="navbar__center">
+        <ul class="navbar__menu" id="navMenu">
+          <li><a href="index.html" class="nav-link">FAMILIA</a></li>
+          <li><a href="index.html#productos" class="nav-link">EXCLUSIVIDAD</a></li>
+          <li><a href="index.html#conocenos" class="nav-link">CONTACTO</a></li>
+          <li><a href="catalogo.html" class="nav-link">TODOS LOS PRODUCTOS</a></li>
+        </ul>
+      </div>
+      <div class="navbar__actions">
+        <button class="icon-btn" id="userIcon" aria-label="Mi cuenta">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button class="icon-btn cart-icon" id="cartIcon" aria-label="Carrito">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/><path d="M2 2h4l2.7 12.4a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L22 6H6"/></svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+      </div>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="checkout-wrapper">
+    <!-- Resumen del pedido -->
+    <div class="checkout-summary">
+      <h2>🛒 TU PEDIDO</h2>
+      <div id="checkoutItemsList" class="checkout-items"></div>
+      <div class="checkout-total">
+        <span>Total</span>
+        <span id="checkoutTotalAmount">$0</span>
+      </div>
+      <p style="font-size:0.75rem; color:#888; margin-top:16px;">
+        *El stock se descontará solo después de confirmar el pago.
+      </p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="checkout-form">
+      <h2>📋 TUS DATOS</h2>
+      <form id="checkoutForm" novalidate>
+        <div class="form-group">
+          <label>Nombre completo *</label>
+          <input type="text" id="fullName" required placeholder="Ej: Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="email" required placeholder="tu@email.com">
+        </div>
+        <div class="form-group">
+          <label>Teléfono (WhatsApp) *</label>
+          <input type="tel" id="phone" required placeholder="Ej: 1155667788">
+        </div>
+        <div class="form-group">
+          <label>Dirección de envío *</label>
+          <input type="text" id="address" required placeholder="Calle, número, piso/dpto">
+        </div>
+
+        <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <!-- Ciudad con validación CABA -->
+          <div class="form-group" style="margin-bottom:0">
+            <label>Ciudad *</label>
+            <input type="text" id="city" required placeholder="Ciudad Autónoma de Buenos Aires"
+                   autocomplete="address-level2">
+            <div class="caba-error" id="cabaError">
+              Por ahora solo realizamos envíos dentro de <strong>CABA</strong> (Ciudad Autónoma de Buenos Aires).
+            </div>
+            <span class="caba-badge hidden" id="cabaBadge">✓ CABA — Envío disponible</span>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0">
+            <label>Código postal *</label>
+            <input type="text" id="zip" required placeholder="Ej: 1425">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label>Notas (opcional)</label>
+          <textarea rows="2" id="notes" placeholder="Horario, instrucciones de entrega, etc."></textarea>
+        </div>
+
+        <button type="submit" class="btn-pagar" id="btnPagar" disabled>
+          PAGAR CON MERCADO PAGO
+        </button>
+        <p class="nota-envio" id="notaEnvio">
+          Completá tu ciudad para verificar si realizamos envíos a tu zona.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Carrito offcanvas -->
+  <div class="cart-panel" id="cartPanel">
+    <div class="cart-panel__header">
+      <h3>Tu Carrito</h3>
+      <button class="cart-panel__close" id="closeCartPanel">&times;</button>
+    </div>
+    <div class="cart-panel__items" id="cartItemsList">
+      <p class="cart-empty">El carrito está vacío</p>
+    </div>
+    <div class="cart-panel__footer">
+      <div class="cart-total">Total: <span id="cartTotal">$0</span></div>
+      <button class="btn btn--primary cart-checkout" id="cartCheckoutBtn">Finalizar compra</button>
+    </div>
+  </div>
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <script src="products.js"></script>
+  <script src="cart.js"></script>
+  <script>
+    // ── Palabras clave que corresponden a CABA ────────────────
+    const CABA_KEYWORDS = [
+      "caba", "c.a.b.a", "capital federal", "capital", "buenos aires",
+      "ciudad de buenos aires", "ciudad autonoma", "ciudad autónoma",
+      "bs as capital", "bsas", "caba argentina", "cdad. aut."
+    ];
+
+    function isCaba(value) {
+      const normalized = value.trim().toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quitar tildes
+      return CABA_KEYWORDS.some(kw => normalized.includes(kw));
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof initCart === 'function') initCart();
+
+      // ── Resumen del carrito ───────────────────────────────
+      const cart       = JSON.parse(localStorage.getItem('skily_cart') || '[]');
+      const container  = document.getElementById('checkoutItemsList');
+      const totalSpan  = document.getElementById('checkoutTotalAmount');
+
+      function formatPrice(p) { return "$" + p.toLocaleString('es-AR'); }
+
+      function renderSummary() {
+        if (cart.length === 0) {
+          container.innerHTML = '<p style="text-align:center;padding:20px;">No hay productos. <a href="catalogo.html" style="color:#fff;text-decoration:underline;">Ir al catálogo</a></p>';
+          totalSpan.innerText = "$0";
+          document.getElementById('btnPagar').disabled = true;
+          return;
+        }
+        let total = 0;
+        container.innerHTML = cart.map(item => {
+          const sub = item.price * item.quantity;
+          total += sub;
+          return `
+            <div class="checkout-item">
+              <img src="${item.image}" onerror="this.src='imagenes/placeholder.png'">
+              <div class="checkout-item-info">
+                <b>${item.name}</b><br>
+                Talle ${item.size} × ${item.quantity}<br>
+                <span style="color:#aaa;font-size:.85rem;">${formatPrice(item.price)} c/u</span>
+              </div>
+              <div style="font-weight:800;">${formatPrice(sub)}</div>
+            </div>`;
+        }).join('');
+        totalSpan.innerText = formatPrice(total);
+      }
+      renderSummary();
+
+      // ── Validación CABA en tiempo real ────────────────────
+      const cityInput  = document.getElementById('city');
+      const cabaError  = document.getElementById('cabaError');
+      const cabaBadge  = document.getElementById('cabaBadge');
+      const btnPagar   = document.getElementById('btnPagar');
+      const notaEnvio  = document.getElementById('notaEnvio');
+      let cabaOk = false;
+
+      cityInput.addEventListener('input', () => {
+        const val = cityInput.value;
+        if (val.length < 3) {
+          cabaError.classList.remove('visible');
+          cabaBadge.classList.add('hidden');
+          cityInput.style.borderColor = '';
+          cabaOk = false;
+          updatePagarBtn();
+          notaEnvio.textContent = 'Completá tu ciudad para verificar si realizamos envíos a tu zona.';
+          return;
+        }
+        if (isCaba(val)) {
+          cabaError.classList.remove('visible');
+          cabaBadge.classList.remove('hidden');
+          cityInput.style.borderColor = 'rgba(74,222,128,.5)';
+          cabaOk = true;
+          notaEnvio.textContent = '✓ Envío a domicilio disponible en CABA. Serás redirigido a Mercado Pago.';
+        } else {
+          cabaError.classList.add('visible');
+          cabaBadge.classList.add('hidden');
+          cityInput.style.borderColor = 'rgba(255,80,80,.5)';
+          cabaOk = false;
+          notaEnvio.textContent = 'Solo realizamos envíos dentro de CABA por el momento.';
+        }
+        updatePagarBtn();
+      });
+
+      function updatePagarBtn() {
+        const hasCart = cart.length > 0;
+        btnPagar.disabled = !(cabaOk && hasCart);
+      }
+
+      // ── Submit: guardar pedido y redirigir a MP ───────────
+      document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (cart.length === 0) { alert("No hay productos en el carrito."); return; }
+        if (!cabaOk) { cityInput.focus(); return; }
+
+        // Validar campos requeridos
+        const required = ['fullName', 'email', 'phone', 'address', 'city', 'zip'];
+        for (const id of required) {
+          if (!document.getElementById(id).value.trim()) {
+            document.getElementById(id).focus();
+            document.getElementById(id).style.borderColor = 'rgba(255,80,80,.5)';
+            return;
+          }
+        }
+
+        const orderData = {
+          customer: {
+            name:    document.getElementById('fullName').value.trim(),
+            email:   document.getElementById('email').value.trim(),
+            phone:   document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            city:    document.getElementById('city').value.trim(),
+            zip:     document.getElementById('zip').value.trim(),
+            notes:   document.getElementById('notes').value.trim()
+          },
+          cart: cart,
+          total: cart.reduce((s, i) => s + i.price * i.quantity, 0),
+          timestamp: Date.now()
+        };
+        localStorage.setItem('pending_order', JSON.stringify(orderData));
+
+        // Redirigir al link de MP del primer producto del carrito
+        const firstProduct = (window.PRODUCTS || PRODUCTS).find(p => p.id === cart[0].id);
+        const mpLink = firstProduct?.mpLink;
+        if (!mpLink) {
+          alert("No hay link de pago para este producto. Contactá al vendedor por WhatsApp.");
+          return;
+        }
+        window.location.href = mpLink;
+      });
+
+      // ── Navbar ────────────────────────────────────────────
+      const navbar    = document.getElementById("navbar");
+      const hamburger = document.getElementById("hamburger");
+      const navMenu   = document.getElementById("navMenu");
+      let lastScroll  = 0;
+      window.addEventListener("scroll", () => {
+        const y = window.scrollY;
+        navbar.classList.toggle("navbar--scrolled", y > 50);
+        navbar.classList.toggle("navbar--hidden", y > lastScroll && y > 200);
+        lastScroll = y;
+      });
+      hamburger?.addEventListener("click", () => {
+        hamburger.classList.toggle("hamburger--open");
+        navMenu.classList.toggle("navbar__menu--open");
+      });
+      document.getElementById("userIcon")?.addEventListener("click", () =>
+        alert("Próximamente podrás gestionar tu cuenta."));
+    });
+  </script>
+</body>
+</html>

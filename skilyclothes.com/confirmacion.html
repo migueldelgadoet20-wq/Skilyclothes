@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedido confirmado - Skily Clothes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .confirm-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg);
+    }
+    .confirm-container {
+      max-width: 640px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+    }
+    .confirm-icon {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+    }
+    .confirm-container h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      letter-spacing: .04em;
+      margin-bottom: 10px;
+    }
+    .confirm-subtitle {
+      color: #888;
+      font-size: .95rem;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Resumen del pedido */
+    .order-details {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      padding: 22px;
+      border-radius: 16px;
+      margin: 0 0 28px;
+      text-align: left;
+      font-size: .9rem;
+      line-height: 1.8;
+    }
+    .order-details strong { color: var(--text); }
+    .order-section-title {
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 8px;
+      margin-top: 14px;
+      display: block;
+    }
+    .order-section-title:first-child { margin-top: 0; }
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .order-total-row {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 14px;
+      margin-top: 10px;
+      border-top: 1px solid var(--border-md);
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+
+    /* Botón confirmar */
+    .btn-confirmar {
+      width: 100%;
+      padding: 16px;
+      background: #25D366;
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.05rem;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: .03em;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .btn-confirmar:hover:not(:disabled) {
+      background: #1fb959;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(37,211,102,.35);
+    }
+    .btn-confirmar:disabled {
+      background: #333;
+      color: #555;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Estado de carga */
+    .loading-msg {
+      display: none;
+      color: #aaa;
+      font-size: .88rem;
+      margin-top: 10px;
+    }
+    .loading-msg.visible { display: block; }
+
+    /* Spinner inline */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Enlace volver */
+    .btn-volver {
+      display: inline-block;
+      color: #888;
+      font-size: .85rem;
+      text-decoration: underline;
+      margin-top: 18px;
+      transition: color .2s;
+    }
+    .btn-volver:hover { color: var(--text); }
+
+    /* Nota inferior */
+    .confirm-nota {
+      font-size: .78rem;
+      color: #555;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    /* Estado sin pedido */
+    .no-order {
+      color: #888;
+      padding: 20px;
+    }
+    .no-order a { color: var(--text); text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="confirm-page">
+    <div class="confirm-container" id="confirmContainer">
+
+      <div class="confirm-icon">✅</div>
+      <h1>¡PAGO REGISTRADO!</h1>
+      <p class="confirm-subtitle">
+        Si ya realizaste el pago en Mercado Pago, hacé clic en el botón para confirmar tu pedido.<br>
+        Te contactaremos al WhatsApp que dejaste para coordinar la entrega.
+      </p>
+
+      <div id="orderPreview" class="order-details"></div>
+
+      <button id="confirmBtn" class="btn-confirmar">
+        ✔️ CONFIRMAR MI PEDIDO
+      </button>
+
+      <div id="loadingMsg" class="loading-msg"></div>
+      <p class="confirm-nota" id="confirmNota">
+        Al confirmar, recibiremos tu pedido y te escribiremos para coordinar la entrega en CABA.
+      </p>
+
+      <a href="catalogo.html" class="btn-volver">← Volver al catálogo</a>
+    </div>
+  </div>
+
+  <script src="products.js"></script>
+  <script>
+    function formatPrice(p) { return '$' + p.toLocaleString('es-AR'); }
+
+    const pendingOrder = JSON.parse(localStorage.getItem('pending_order') || 'null');
+    const previewDiv   = document.getElementById('orderPreview');
+    const confirmBtn   = document.getElementById('confirmBtn');
+
+    // ── Mostrar resumen ───────────────────────────────────────
+    if (!pendingOrder) {
+      previewDiv.innerHTML = `
+        <p class="no-order">No hay ningún pedido pendiente.
+          <a href="catalogo.html">Ir al catálogo</a>
+        </p>`;
+      confirmBtn.disabled = true;
+    } else {
+      const c = pendingOrder.customer;
+      let itemsHtml = pendingOrder.cart.map(item => `
+        <div class="order-item-row">
+          <span>${item.name} — Talle ${item.size} × ${item.quantity}</span>
+          <span>${formatPrice(item.price * item.quantity)}</span>
+        </div>`).join('');
+
+      previewDiv.innerHTML = `
+        <span class="order-section-title">Datos del cliente</span>
+        <strong>${c.name}</strong><br>
+        📧 ${c.email}<br>
+        📱 ${c.phone}<br>
+        📍 ${c.address}, ${c.city} — CP ${c.zip}
+        ${c.notes ? `<br>📝 <em>${c.notes}</em>` : ''}
+
+        <span class="order-section-title">Productos</span>
+        ${itemsHtml}
+
+        <div class="order-total-row">
+          <span>Total pagado</span>
+          <span>${formatPrice(pendingOrder.total)}</span>
+        </div>`;
+    }
+
+    // ── Confirmar pedido ──────────────────────────────────────
+    confirmBtn.addEventListener('click', async () => {
+      if (!pendingOrder) return;
+
+      confirmBtn.disabled = true;
+      const loadingMsg = document.getElementById('loadingMsg');
+      loadingMsg.classList.add('visible');
+      loadingMsg.innerHTML = '<span class="spinner"></span> Enviando pedido...';
+
+      const c = pendingOrder.customer;
+
+      // Armar el texto del pedido para el email
+      let itemsText = pendingOrder.cart
+        .map(i => `• ${i.name} — Talle ${i.size} × ${i.quantity} = ${formatPrice(i.price * i.quantity)}`)
+        .join('\n');
+
+      const emailBody = `
+════════════════════════════════
+🛍️  NUEVO PEDIDO — SKILY CLOTHES
+════════════════════════════════
+
+👤 CLIENTE
+Nombre:   ${c.name}
+Email:    ${c.email}
+Teléfono: ${c.phone}
+
+📍 DIRECCIÓN DE ENVÍO
+${c.address}
+${c.city} — CP ${c.zip}
+${c.notes ? `Notas: ${c.notes}` : ''}
+
+📦 PRODUCTOS
+${itemsText}
+
+💰 TOTAL: ${formatPrice(pendingOrder.total)}
+
+🕐 Fecha: ${new Date(pendingOrder.timestamp).toLocaleString('es-AR')}
+════════════════════════════════
+`.trim();
+
+      // ── Enviar email via FormSubmit ────────────────────────
+      // FormSubmit reenvía el formulario a tu email.
+      // La primera vez te mandará un email de activación — confirmalo.
+      try {
+        const formData = new FormData();
+        formData.append('name',      c.name);
+        formData.append('email',     c.email);   // reply-to del cliente
+        formData.append('_replyto',  c.email);
+        formData.append('message',   emailBody);
+        formData.append('telefono',  c.phone);
+        formData.append('direccion', `${c.address}, ${c.city} CP ${c.zip}`);
+        formData.append('productos', itemsText);
+        formData.append('total',     formatPrice(pendingOrder.total));
+        formData.append('_subject',  `🛍️ Pedido confirmado — ${c.name} — ${formatPrice(pendingOrder.total)}`);
+        formData.append('_captcha',  'false');
+        // La siguiente línea evita el redirect de FormSubmit
+        formData.append('_next',     window.location.href);
+
+        // ⚠️ REEMPLAZÁ el email de abajo por el tuyo de Gmail
+        const resp = await fetch('https://formsubmit.co/ajax/miguel.delgado.et20@gmail.com', {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        const result = await resp.json();
+
+        if (result.success === 'true' || result.success === true) {
+          // ── Email enviado OK ──────────────────────────────
+          // Descontar stock
+          for (const item of pendingOrder.cart) {
+            const currentStock = window.getProductStock
+              ? window.getProductStock(item.id)
+              : (PRODUCTS.find(p => p.id === item.id)?.stock || 0);
+            const newStock = Math.max(0, currentStock - item.quantity);
+            if (window.updateProductStock) window.updateProductStock(item.id, newStock);
+          }
+
+          // Limpiar carrito y pedido pendiente
+          localStorage.removeItem('skily_cart');
+          localStorage.removeItem('pending_order');
+          if (window.refreshProducts) window.refreshProducts();
+
+          // Mostrar éxito
+          loadingMsg.innerHTML = `
+            ✅ <strong>¡Pedido recibido!</strong><br>
+            Te escribiremos al <strong>${c.phone}</strong> para coordinar la entrega.`;
+
+          confirmBtn.textContent = '¡Pedido enviado!';
+          document.getElementById('confirmNota').textContent =
+            'Revisá tu WhatsApp — te contactaremos pronto para confirmar la entrega.';
+
+          // Redirigir al catálogo después de 4 segundos
+          setTimeout(() => { window.location.href = 'catalogo.html'; }, 4000);
+
+        } else {
+          throw new Error('FormSubmit no devolvió éxito');
+        }
+
+      } catch (err) {
+        // Si falla el email igual guardamos el pedido localmente
+        console.error('Error al enviar email:', err);
+
+        // Fallback: intentar con WhatsApp como respaldo
+        const waMsg = encodeURIComponent(
+          `🛍️ NUEVO PEDIDO - SKILY CLOTHES\n\n` +
+          `Cliente: ${c.name}\nTel: ${c.phone}\nEmail: ${c.email}\n` +
+          `Dir: ${c.address}, ${c.city} CP ${c.zip}\n\n` +
+          `PRODUCTOS:\n${itemsText}\n\nTOTAL: ${formatPrice(pendingOrder.total)}`
+        );
+
+        loadingMsg.innerHTML = `
+          ⚠️ Hubo un problema al enviar el email.<br>
+          <a href="https://wa.me/5491127747430?text=${waMsg}"
+             target="_blank"
+             style="color:#25D366;font-weight:700;">
+            Hacé clic acá para enviarnos el pedido por WhatsApp →
+          </a>`;
+
+        confirmBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
