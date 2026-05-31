@@ -1,0 +1,10 @@
+[build]
+  base    = "skilyclothes.com"
+  publish = "skilyclothes.com"
+  functions = "skilyclothes.com/netlify/functions"
+
+[[redirects]]
+  from = "/*"
+  to   = "/index.html"
+  status = 200
+  
